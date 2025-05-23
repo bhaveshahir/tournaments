@@ -21,3 +21,4 @@ Route::get('/', function () {
 Route::get('/', fn () => redirect()->route('tournaments.index'));
 Route::resource('tournaments', TournamentController::class);
 Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
+Route::get('/tournaments/{tournament}/result', [TournamentController::class, 'result'])->name('tournaments.result');
