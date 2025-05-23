@@ -38,15 +38,47 @@ class TournamentController extends Controller
 
         return redirect()->route('tournaments.index')->with('success', 'Tournament created successfully.');
     }
-
-    /**
-     * Display the specified tournament and its teams.
-     */
+    
     public function show(Tournament $tournament)
     {
-        $tournament->load('teams');
-        return view('tournaments.show', compact('tournament'));
+        $teams = $tournament->teams->take($tournament->teamsize);
+    
+        $rounds = [];
+        $rounds[] = $teams;
+    
+        while (count(end($rounds)) > 1) {
+            $rounds[] = $this->simulateRound(end($rounds));
+        }
+    
+        $winner = end($rounds)[0]->name ?? null;
+    
+        return view('tournaments.show', [
+            'tournament' => $tournament,
+            'rounds' => $rounds,
+            'winner' => $winner,
+        ]);
     }
+    
+    private function simulateRound($teams)
+    {
+        $winners = [];
+    
+        for ($i = 0; $i < count($teams); $i += 2) {
+            $team1 = $teams[$i] ?? null;
+            $team2 = $teams[$i + 1] ?? null;
+    
+            if ($team1 && $team2) {
+                // Pick random winner (or change this logic later)
+                $winners[] = rand(0, 1) ? $team1 : $team2;
+            } elseif ($team1) {
+                $winners[] = $team1; // Advance lone team
+            }
+        }
+    
+        return $winners;
+    }
+    
+
 
     /**
      * Show the form for editing the specified tournament.
